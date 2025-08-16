@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi dispositivo</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <script src="supabase.js"></script>
+  <script src="main.js" defer></script>
+  <style>
+    body { background-color: #f8f9fa; padding: 1rem; font-family: sans-serif; }
+    .estado-bloqueado { color: red; font-weight: bold; }
+    .estado-activo { color: green; font-weight: bold; }
+    .cuota { margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2 class="text-center mb-4">📱 Estado del dispositivo</h2>
+    <div id="estado" class="text-center mb-3">Cargando...</div>
+
+    <div id="cuotas" class="mb-4">
+      <h5>💳 Cuotas pendientes</h5>
+      <ul id="lista-cuotas" class="list-group"></ul>
+    </div>
+
+    <div class="mb-4">
+      <label for="comprobante" class="form-label">📤 Subir comprobante</label>
+      <input type="file" id="comprobante" class="form-control" />
+      <button id="btnSubir" class="btn btn-primary mt-2">Enviar</button>
+    </div>
+
+    <div class="text-center">
+      <button id="btnContacto" class="btn btn-outline-secondary">📞 Contactar soporte</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const imei = await obtenerIMEI(); // función en main.js
+      const { estado, cuotas } = await obtenerEstadoCliente(imei); // función en main.js
+
+      const estadoDiv = document.getElementById("estado");
+      estadoDiv.textContent = estado === "bloqueado" ? "🔒 Dispositivo bloqueado" : "✅ Dispositivo activo";
+      estadoDiv.className = estado === "bloqueado" ? "estado-bloqueado" : "estado-activo";
+
+      const listaCuotas = document.getElementById("lista-cuotas");
+      cuotas.forEach(cuota => {
+        const li = document.createElement("li");
+        li.className = "list-group-item cuota";
+        li.textContent = Cuota ${cuota.numero}: ${cuota.estado};
+        listaCuotas.appendChild(li);
+      });
+
+      document.getElementById("btnSubir").onclick = async () => {
+        const file = document.getElementById("comprobante").files[0];
+        if (file) await subirComprobante(imei, file); // función en main.js
+      };
+
+      document.getElementById("btnContacto").onclick = () => {
+        window.location.href = "tel:+584241234567"; // número institucional
+      };
+    });
+  </script>
+</body>
+</html>
